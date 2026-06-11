@@ -1,0 +1,13 @@
+[project]
+name = "managing-dependencies"
+version = "1.0.0"
+description = "Order management agent with dependency injection"
+requires-python = ">=3.11"
+
+dependencies = [
+    "pydantic-ai>=1.77.0",
+    "python-dotenv>=1.0.1",
+    "openai>=2.30.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+]
