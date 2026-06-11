@@ -85,7 +85,29 @@ class ScopedDependencyContainer:
         Raises:
             ValueError: If dependency not registered
         """
-        # YOUR CODE HERE
+        if name not in self._registrations:
+            raise ValueError(f"Dependency '{name}' not registered")
+
+        registration = self._registrations[name]
+
+        if registration.scope == DependencyScope.SINGLETON:
+            if registration.singleton_instance is None:
+                registration.singleton_instance = await self._create_instance(
+                    registration.factory
+                )
+            return registration.singleton_instance
+
+        if registration.scope == DependencyScope.REQUEST:
+            if name not in self._request_instances:
+                self._request_instances[name] = await self._create_instance(
+                    registration.factory
+                )
+            return self._request_instances[name]
+
+        if registration.scope == DependencyScope.TRANSIENT:
+            return await self._create_instance(registration.factory)
+
+        raise ValueError(f"Unknown dependency scope: {registration.scope}")
 
     async def _create_instance(self, factory: Callable) -> Any:
         """
@@ -107,7 +129,9 @@ class ScopedDependencyContainer:
 
         Clears request-scoped instances.
         """
-        # YOUR CODE HERE
+        self._request_id += 1
+        self._request_instances.clear()
+        logger.debug(f"Started request scope #{self._request_id}")
 
     def end_request(self):
         """End current request scope."""
@@ -120,7 +144,15 @@ class ScopedDependencyContainer:
 
         Calls dispose() method on instances that have it.
         """
-        # YOUR CODE HERE
+        for name, registration in self._registrations.items():
+            if registration.singleton_instance is not None:
+                await self._dispose_instance(registration.singleton_instance, name)
+
+        for name, instance in self._request_instances.items():
+            await self._dispose_instance(instance, name)
+
+        self._registrations.clear()
+        self._request_instances.clear()
 
     async def _dispose_instance(self, instance: Any, name: str):
         """Dispose a single instance if it has dispose method."""
@@ -171,8 +203,6 @@ class Logger:
 
 async def example_usage():
     """Demonstrate scoped dependencies."""
-    # YOUR CODE HERE
-    # [SOLUTION]
     container = ScopedDependencyContainer()
 
     # Register dependencies with different scopes
