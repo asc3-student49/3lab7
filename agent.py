@@ -195,15 +195,33 @@ async def process_order_query(query: str, deps: AgentDependencies) -> str:
     Returns:
         Agent response
     """
-    # YOUR CODE HERE
-    pass
+    result = await order_agent.run(query, deps=deps)
+    return result.output
+
+
 # Example usage
 async def main():
     """Example of using agent with dependencies."""
     from factory import DependencyFactory
 
-    # YOUR CODE HERE
-    pass
+    factory = DependencyFactory()
+
+    try:
+        deps = await factory.create_dependencies()
+
+        sample_queries = [
+            "What is the status of order ORD-001?",
+            "Send an update for order ORD-002 saying it is out for delivery.",
+        ]
+
+        for query in sample_queries:
+            response = await process_order_query(query, deps)
+            print(f"Query: {query}")
+            print(f"Response: {response}\n")
+    finally:
+        await factory.shutdown()
+
+
 if __name__ == "__main__":
     import asyncio
 
