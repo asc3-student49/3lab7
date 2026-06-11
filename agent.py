@@ -113,7 +113,7 @@ async def send_order_update(
     order = await get_order(ctx, order_id)
 
     # Check if email notifications are enabled
-    if not ctx.deps.config.get_feature("email_notifications", True):
+    if not ctx.deps.config.get_feature("email_notifications"):
         logger.warning("Email notifications disabled in config")
         return False
 
@@ -165,7 +165,9 @@ async def search_orders(
 
     # Query database
     results = await ctx.deps.database.query(
-        "SELECT * FROM orders WHERE customer_email = :email", {"email": customer_email}
+        "SELECT id, status, customer_email, total, created_at "
+        "FROM orders WHERE customer_email = :customer_email",
+        {"customer_email": customer_email},
     )
 
     # Convert results to OrderInfo objects
